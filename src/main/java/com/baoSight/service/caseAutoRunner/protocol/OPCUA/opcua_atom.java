@@ -1,10 +1,14 @@
 package com.baoSight.service.caseAutoRunner.protocol.OPCUA;
 
 import com.baoSight.service.caseAutoRunner.atomManipulation;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 public class opcua_atom extends atomManipulation {
     public void opcuaInitial(){
         System.out.println("OPC-UA初始化完成");
+        WebDriver driver = new ChromeDriver();
+        driver.get("https://www.baosight.com/");
     }
 
     public void port(){
