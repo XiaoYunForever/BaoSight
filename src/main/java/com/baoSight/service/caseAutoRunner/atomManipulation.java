@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Actions;
 
 import java.time.Duration;
 
@@ -59,8 +60,35 @@ public class atomManipulation {
         System.out.println("初始化完成");
     }
 
-    public void loadingVriables(){
-        System.out.println("载入变量表");
+    public void loadingVriables() throws InterruptedException {
+        System.out.println("开始载入变量表");
+        WebElement importVariable = driver.findElement(By.xpath("/html/body/div[1]/div[3]/div[1]/div[2]/div[2]/div[4]/div/div/div/div/div[6]/div/div[4]/div/div[3]"));
+        Actions a = new Actions(driver);
+        a.contextClick(importVariable);
+        Thread.sleep(5000);
+        a.perform();
+
+        WebElement importVariable2 = driver.findElement(By.className("p-Menu-itemLabel"));
+        importVariable2.click();
+        WebElement importVariable3 = driver.findElement(By.xpath("/html/body/div[9]/div/div[3]/button[1]"));
+        importVariable3.click();
+
+        //上传变量表
+        WebElement fileupload = driver.findElement(By.xpath("/html/body/div[1]/div[3]/div[3]/div[1]/div[4]/div[1]/div/div/div[4]/div/div/div"));
+        fileupload.click();
+
+        //显式等待
+//        WebElement fileInput = new WebDriverWait(driver, Duration.ofSeconds(10))
+//                .until(ExpectedConditions.presenceOfElementLocated(
+//                        By.cssSelector("input[type='file'][accept='text/csv,.csv,text/text,.gvs']")));
+
+        WebElement fileInput = driver.findElement(By.cssSelector("input[type='file'][accept='text/csv,.csv,text/text,.gvs']"));
+        fileInput.sendKeys("E:\\test.csv");
+
+        Thread.sleep(2000);
+        WebElement fileInput2 = driver.findElement(By.xpath("//button[text()='导入']"));
+        fileInput2.click();
+        System.out.println("载入变量表完成");
     }
 
     public void loadingPrograms(){
