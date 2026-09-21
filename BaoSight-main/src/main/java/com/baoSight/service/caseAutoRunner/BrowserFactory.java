@@ -3,7 +3,11 @@ package com.baoSight.service.caseAutoRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
+import java.util.HashMap;
+import java.util.Map;
 
 /** 按参数顺序尝试浏览器，成功建立一个会话后立即返回。 */
 public final class BrowserFactory {
@@ -32,10 +36,10 @@ public final class BrowserFactory {
                 WebDriver driver;
                 switch (browser) {
                     case CHROME:
-                        driver = new ChromeDriver();
+                        driver = new ChromeDriver(createBrowserOptions(ChromeOptions.class));
                         break;
                     case EDGE:
-                        driver = new EdgeDriver();
+                        driver = new EdgeDriver(createBrowserOptions(EdgeOptions.class));
                         break;
                     default:
                         throw new IllegalArgumentException("不支持的浏览器：" + browser);
@@ -48,5 +52,20 @@ public final class BrowserFactory {
             }
         }
         throw failure;
+    }
+
+    /** 预先允许本地 IDE 使用剪贴板，避免浏览器权限气泡挡住页面。 */
+    private static <T> T createBrowserOptions(Class<T> optionsType) {
+        Map<String, Object> prefs = new HashMap<>();
+        // 1 = allow，避免 localhost:5571 首次访问时弹出“读取剪贴板”提示。
+        prefs.put("profile.default_content_setting_values.clipboard", 1);
+        if (optionsType == ChromeOptions.class) {
+            ChromeOptions options = new ChromeOptions();
+            options.setExperimentalOption("prefs", prefs);
+            return optionsType.cast(options);
+        }
+        EdgeOptions options = new EdgeOptions();
+        options.setExperimentalOption("prefs", prefs);
+        return optionsType.cast(options);
     }
 }

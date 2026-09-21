@@ -2,6 +2,7 @@ package com.baoSight.service.caseAutoRunner;
 
 import org.openqa.selenium.WebDriver;
 import java.net.URI;
+import java.time.Duration;
 
 /** 一次用例的浏览器会话；只负责准备环境及释放资源。 */
 public final class BrowserSession implements AutoCloseable {
@@ -22,6 +23,9 @@ public final class BrowserSession implements AutoCloseable {
         }
         WebDriver driver = BrowserFactory.createBrowser(priority);
         try {
+            // 基础等待：所有 findElement/findElements 默认最多等待 30 秒。
+            // 具体页面状态仍由原子操作使用 WebDriverWait 显式等待。
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
             driver.manage().window().maximize();
             driver.get(ideUrl);
             return new BrowserSession(driver);

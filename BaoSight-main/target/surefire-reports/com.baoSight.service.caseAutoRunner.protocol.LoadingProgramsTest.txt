@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: com.baoSight.service.caseAutoRunner.protocol.LoadingProgramsTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.970 s <<< FAILURE! -- in com.baoSight.service.caseAutoRunner.protocol.LoadingProgramsTest
+com.baoSight.service.caseAutoRunner.protocol.LoadingProgramsTest.loadingProgramsOnRealIdePage -- Time elapsed: 2.945 s <<< ERROR!
+java.lang.IllegalStateException: 当前不在 PLC 项目页面。当前地址：https://localhost:5571/；期望地址包含：#bsprojects:
+	at com.baoSight.service.caseAutoRunner.protocol.atomManipulation.loadingPrograms(atomManipulation.java:70)
+	at com.baoSight.service.caseAutoRunner.protocol.LoadingProgramsTest.loadingProgramsOnRealIdePage(LoadingProgramsTest.java:35)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

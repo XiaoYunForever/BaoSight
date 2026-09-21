@@ -7,13 +7,13 @@ import java.util.Locale;
 
 /** 公共执行模板：准备会话 → 执行具体用例 → 按配置收尾。 */
 public abstract class AbstractBrowserCase implements Protocol {
-    @Value("${plc.browser:CHROME}")
+    @Value("${plc.browser}")
     private String browserName;
 
-    @Value("${plc.browser.keepOpen:true}")
+    @Value("${plc.browser.keepOpen}")
     private boolean keepOpen;
 
-    @Value("${plc.ide.url:}")
+    @Value("${plc.ide.url}")
     private String ideUrl;
 
     @Override

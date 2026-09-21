@@ -13,8 +13,10 @@ public class opcua_01 extends AbstractBrowserCase {
     @Override
     protected void executeCase(BrowserSession session) {
         opcua_atom actions = new opcua_atom(session.getDriver());
-        // 示例 占位
+        // 原子操作
         actions.initialization();
-        actions.opcuaInitial();
+        actions.loadingPrograms();
+        actions.simAndDownload();
+        actions.readCPUAndLoad();
     }
 }
