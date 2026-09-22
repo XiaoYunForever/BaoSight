@@ -44,7 +44,7 @@ public class atomManipulation implements atomManipulationInterface {
         WebElement newproject = driver.findElement(By.className("start-up-new-project"));
         newproject.click();
         WebElement projectname = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/label[1]/div[2]/input"));
-        projectname.sendKeys("aqq15");
+        projectname.sendKeys("aqq17");
 
         //project path
         WebElement path = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/div[2]/div[2]/div"));
@@ -174,8 +174,9 @@ public class atomManipulation implements atomManipulationInterface {
         // 实际连接PLC的后续操作可能不同，到时候具体改，写到downloadToPLC就行。
 
         //点击下载或关闭弹窗，他们共用同一个cssSelector
-        WebElement close = findDialogElement(wait, By.cssSelector(".dialogControl button.theia-button.main"));
-        close.click();
+//        WebElement close = findDialogElement(wait, By.cssSelector(".dialogControl button.theia-button.main"));
+//        close.click();
+        clickVisible(wait, By.cssSelector(".dialogControl button.theia-button.main"));
         waitForInvisible(wait, By.id("theia-dialog-shell"));
 
     }
@@ -195,15 +196,20 @@ public class atomManipulation implements atomManipulationInterface {
             throw new IllegalStateException("当前不在 PLC 项目页面：" + currentUrl);
         }
     }
-    // 普通按键点击
+    // 普通按键点击，通过关键词查找
     private void clickVisible(WebDriverWait wait, String text) {
         WebElement element = findVisibleElement(wait, text);
         element.click();
         System.out.println(text+"完成");
         sleep(1000);/** 点击结束睡一秒等待一下*/
-
-
     }
+    //普通按键点击 重载，可以通过定位器查找
+    private void clickVisible(WebDriverWait wait, By locator) {
+        WebElement element = findVisibleElement(wait, locator);
+        element.click();
+        sleep(1000);/** 点击结束睡一秒等待一下*/
+    }
+
     // 普通右键点击
     private void rightClickVisible(WebDriverWait wait, String text) {
         WebElement element = findVisibleElement(wait, text);
