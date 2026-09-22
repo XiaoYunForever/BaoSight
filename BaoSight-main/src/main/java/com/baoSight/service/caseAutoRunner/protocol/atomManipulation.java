@@ -3,6 +3,7 @@ package com.baoSight.service.caseAutoRunner.protocol;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -43,7 +44,7 @@ public class atomManipulation implements atomManipulationInterface {
         WebElement newproject = driver.findElement(By.className("start-up-new-project"));
         newproject.click();
         WebElement projectname = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/label[1]/div[2]/input"));
-        projectname.sendKeys("aqq12");
+        projectname.sendKeys("aqq15");
 
         //project path
         WebElement path = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/div[2]/div[2]/div"));
@@ -123,13 +124,14 @@ public class atomManipulation implements atomManipulationInterface {
         // 确认任务参数（默认名称和“定期循环任务”沿用界面默认值）。
         By taskDialogLocator = By.id("theia-dialog-shell");
         clickDialogVisible(wait, taskDialogLocator, "确定");
+        waitForInvisible(wait, taskDialogLocator);
 
         // 进入新建任务页面，添加程序调用。
-        clickVisible(wait, "添加调用");
-        clickVisible(wait, "添加调用");
+        By callDialogLocator = By.id("theia-dialog-shell");
+        By callDialogTitle = By.xpath("//*[@id='theia-dialog-shell']//*[normalize-space()='添加调用']");
+        clickUntilVisible(wait, "添加调用", callDialogTitle);
 
         // 在“添加调用”弹窗中选中 STD.PU_1，然后确认。
-        By callDialogLocator = By.id("theia-dialog-shell");
         selectDialogItem(wait, callDialogLocator, "STD.PU_1");
         clickDialogVisible(wait, callDialogLocator, "确定");
 
@@ -165,17 +167,16 @@ public class atomManipulation implements atomManipulationInterface {
         //等待在线过程结束
         waitForInvisible(wait, By.cssSelector("#theia-dialog-shell.loading-dialog"));
         System.out.println("仿真已在线。");
-
+//----------------------------------------------------
         // 在线 -> 下载到设备
         clickVisible(wait, "在线");
         clickVisible(wait, "下载到设备");
         // 实际连接PLC的后续操作可能不同，到时候具体改，写到downloadToPLC就行。
-        WebDriverWait resultWait = new WebDriverWait(driver, Duration.ofSeconds(60));
 
         //点击下载或关闭弹窗，他们共用同一个cssSelector
         WebElement close = findDialogElement(wait, By.cssSelector(".dialogControl button.theia-button.main"));
         close.click();
-        waitForInvisible(resultWait, By.id("theia-dialog-shell"));
+        waitForInvisible(wait, By.id("theia-dialog-shell"));
 
     }
 
@@ -227,6 +228,25 @@ public class atomManipulation implements atomManipulationInterface {
             }
             return null;
         });
+    }
+
+    /** 点击后等待目标出现；已出现就不再点击，未出现才重试。 */
+    private void clickUntilVisible(WebDriverWait wait, String text, By resultLocator) {
+        driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+        try {
+            WebDriverWait resultWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                if (ExpectedConditions.visibilityOfElementLocated(resultLocator).apply(driver) != null) return;
+                clickVisible(wait, text);
+                try {
+                    resultWait.until(ExpectedConditions.visibilityOfElementLocated(resultLocator));
+                    return;
+                } catch (TimeoutException ignored) { /* 未出现时再点击一次。 */ }
+            }
+        } finally {
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+        }
+        throw new IllegalStateException("点击“" + text + "”后，目标仍未出现：" + resultLocator);
     }
 
     /**
