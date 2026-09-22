@@ -7,6 +7,7 @@ C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\BrowserSession.java
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\AbstractBrowserCase.java
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\atomManipulation.java
+C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\atomManipulationInterface.java
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\OPCUA\opcua_01.java
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\OPCUA\opcua_02.java
 C:\Users\fenchen\Desktop\文件夹\PLC\demo\Project\BaoSight-main\src\main\java\com\baoSight\service\caseAutoRunner\protocol\OPCUA\opcua_atom.java

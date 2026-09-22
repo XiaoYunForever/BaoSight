@@ -15,7 +15,8 @@ public class opcua_01 extends AbstractBrowserCase {
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
         actions.initialization();
-        actions.loadingPrograms();
+        // 加载opcua01 下的PLC代码
+        actions.loadingPrograms("opcua01");
         actions.simAndDownload();
         actions.readCPUAndLoad();
     }
