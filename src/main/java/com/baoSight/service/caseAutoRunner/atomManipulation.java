@@ -16,7 +16,7 @@ public class atomManipulation {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--user-agent=MyAgent");
         WebDriver driver = new ChromeDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(45));
         driver.get("https://localhost:5571");
     }
 

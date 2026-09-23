@@ -46,6 +46,9 @@ public class opcua_atom extends atomManipulation {
         Thread.sleep(500);
         target.click();
         System.out.println("已点击 OPC UA服务器");
+        By CHECKBOX = By.cssSelector(".property-checkbox input[type='checkbox']");
+        WebElement checkbox = driver.findElement(CHECKBOX);
+        checkbox.click();
 
         System.out.println("OPC-UA初始化完成");
     }
