@@ -16,7 +16,7 @@ public class testController {
     mainRun mainrun;
 
     @PostMapping("/test")
-    public UserTestDTO test(@RequestBody UserTestDTO usertestdto) {
+    public UserTestDTO test(@RequestBody UserTestDTO usertestdto) throws InterruptedException {
         mainrun.run(usertestdto);
 
         return null;

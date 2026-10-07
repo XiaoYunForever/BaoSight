@@ -1,0 +1,11 @@
+BrowserFactory:静态工厂，内含静态方法，自动完成EDGE/Chrome浏览器的实例化并return一个driver。且可以设置浏览器剪切板弹窗
+
+BrowserSession:调用BrowserFactory中的静态方法，拿到driver实例，再将这个driver实例传给BrowserSession类 的构造器获得了一个BrowserSeesion类的实例。
+
+    即将driver封装成一个BrowserSession，通过BrowserSession实例的getdriver()获得初始化设置后的driver
+
+
+
+接着通过AbstractBrowserCase中的start()方法，得到session实例并进行相关操作。并在内部调用executeCase()方法来执行具体的用例操作。
+
+

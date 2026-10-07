@@ -1,6 +1,7 @@
 package com.baoSight.service.taskDispatcher;
 
 import com.baoSight.DTO.UserTestDTO;
+import com.baoSight.DTO.caseDTO;
 import com.baoSight.service.caseAutoRunner.protocol.Protocol;
 import com.baoSight.service.evaluation.Evaluation;
 import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
@@ -24,9 +25,8 @@ public class mainRun {
     private ApplicationContext applicationContext;
 
 
-    public void run(UserTestDTO usertestdto) {
+    public void run(UserTestDTO usertestdto) throws InterruptedException {
         codelist = usertestdto.getCodelist();
-
 
 
         //解析
@@ -44,6 +44,7 @@ public class mainRun {
             //自动化模块反射执行
             Protocol protocol = applicationContext.getBean("case"+"_"+caseName,Protocol.class);
             protocol.start();
+
 
 //            //数据解析处理
 //            Dataprocess dataprocess = applicationContext.getBean("dataprocess"+"_"+caseName,Dataprocess.class);
