@@ -10,14 +10,32 @@ public class opcua_01 extends AbstractBrowserCase {
 //    每一次案例需要selenium资源，这部分的前置操作是重复的，所以抽象出来到AbstractBrowserCase。executeCase方法只要专注原子操作排列组合就行
 //     调用抽象类的start(公共部分抽象)，然后start方法调用executeCase，子类具体实现executeCase操作
 //     一次测试案例操作，需要一次session资源，传入对应的session
+
+
     @Override
     protected void executeCase(BrowserSession session) {
+
+        String caseName = "opcua01";
+
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
         actions.initialization();
-        // 加载opcua01 下的PLC代码
-        actions.loadingPrograms("opcua01");
+        actions.loadingPrograms(caseName);
         actions.simAndDownload();
+        actions.observeVariables(caseName);
         actions.readCPUAndLoad();
+
+
+
+
+
+
     }
 }
+/*
+     写一个客户端连接原子操作，然后在连接方法下判断是否使用仿真服务器，
+     若使用，则启动仿真服务器，并将地址改到仿真服务器。
+     若不使用，不启动服务器，地址使用PLC地址
+
+
+ */

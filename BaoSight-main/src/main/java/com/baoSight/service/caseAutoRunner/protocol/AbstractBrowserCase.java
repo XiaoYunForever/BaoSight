@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Locale;
 
 /** 公共执行模板：准备会话 → 执行具体用例 → 按配置收尾。 */
+
 public abstract class AbstractBrowserCase implements Protocol {
     @Value("${plc.browser}")
     private String browserName;
@@ -33,7 +34,9 @@ public abstract class AbstractBrowserCase implements Protocol {
         BrowserSession session = BrowserSession.open(ideUrl, preferred, fallback);
         // keepopen 为true 则案例结束后自动关闭浏览器
         if (keepOpen) {
+
             executeCase(session);
+
         } else {
             try (BrowserSession managed = session) {
                 executeCase(managed);

@@ -19,6 +19,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.HashSet;
+import org.openqa.selenium.StaleElementReferenceException;
 
 public class atomManipulation implements atomManipulationInterface {
     // 项目页通过 URL 片段标识，域名和项目名可以变化。
@@ -33,18 +38,14 @@ public class atomManipulation implements atomManipulationInterface {
 
     public void initialization(){
         System.out.println("初始化开始\n");
-        //登录 Service版本
-//        WebElement username = driver.findElement(By.id("username"));
-//        username.sendKeys("admin");
-//        WebElement password = driver.findElement(By.id("password"));
-//        password.sendKeys("admin123");
-//        password.sendKeys(Keys.ENTER);
 
         //创建项目
         WebElement newproject = driver.findElement(By.className("start-up-new-project"));
         newproject.click();
+        sleep(1000);
         WebElement projectname = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/label[1]/div[2]/input"));
-        projectname.sendKeys("aqq17");
+        projectname.sendKeys("a10");
+
 
         //project path
         WebElement path = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/div[2]/div[2]/div"));
@@ -181,6 +182,41 @@ public class atomManipulation implements atomManipulationInterface {
 
     }
 
+    public void observeVariables(String caseName) {
+        ensureProjectPage();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        Path csvFile = findImportFile(caseName, ".csv");//
+
+        // 新建监控表。
+        rightClickVisible(wait, "监控表");
+        clickVisible(wait, "添加监控表");
+
+        // 打开导入窗口并传入当前案例目录下的 CSV。
+        clickVisible(wait, By.cssSelector("[test-id$='-watch-table-import-watch-table']"));
+        By dialogLocator = By.id("theia-dialog-shell");
+        WebElement dialog = visibleDialog(wait, dialogLocator);
+        dialog.findElement(By.cssSelector("input[type='file']"))
+                .sendKeys(csvFile.toAbsolutePath().toString());
+        clickDialogVisible(wait, dialogLocator, "导入");
+        waitForInvisible(wait, dialogLocator);
+
+        // 弹窗消失后表格还会异步重绘，先等导入的变量行真正出现。
+//        By importedVariable = By.xpath(
+//                "//div[contains(@class,'watch-table-tab-widget')]"
+//                        + "//td[@column_key='varName' and normalize-space(.)!='']");
+//        wait.until(ExpectedConditions.visibilityOfElementLocated(importedVariable));
+
+        // 使用 CSS 定位监控图标并点击一次。
+        By monitorButton = By.cssSelector(
+                "div.iconsvg-monitor[test-id$='.wt-config-table-editor-watch-watch-table']");
+        clickVisible(wait, monitorButton);
+        printWatchValues(wait);
+    }
+
+
+
+
+
     /*
         上面写原子操作，下面写原子操作需要使用的私有函数
         --------------------------
@@ -201,13 +237,13 @@ public class atomManipulation implements atomManipulationInterface {
         WebElement element = findVisibleElement(wait, text);
         element.click();
         System.out.println(text+"完成");
-        sleep(1000);/** 点击结束睡一秒等待一下*/
+        sleep(500);/** 点击结束睡一秒等待一下*/
     }
     //普通按键点击 重载，可以通过定位器查找
     private void clickVisible(WebDriverWait wait, By locator) {
         WebElement element = findVisibleElement(wait, locator);
         element.click();
-        sleep(1000);/** 点击结束睡一秒等待一下*/
+        sleep(500);/** 点击结束睡一秒等待一下*/
     }
 
     // 普通右键点击
@@ -215,7 +251,7 @@ public class atomManipulation implements atomManipulationInterface {
         WebElement element = findVisibleElement(wait, text);
         new Actions(driver).contextClick(element).perform();
         System.out.println(text + "右键完成");
-        sleep(1000);/** 点击结束睡一秒等待一下*/
+        sleep(500);/** 点击结束睡一秒等待一下*/
     }
 
     // 查找可点击的按键
@@ -260,6 +296,11 @@ public class atomManipulation implements atomManipulationInterface {
     * 比如opcua1，需要传入opcua01参数，定位到具体的目录
     * */
     private Path findPlcOpenXml(String caseName) {
+        return findImportFile(caseName, ".xml");
+    }
+
+    /** 从当前案例目录中查找指定扩展名的导入文件。 */
+    private Path findImportFile(String caseName, String extension) {
         if (caseName == null || caseName.isBlank()) {
             throw new IllegalArgumentException("caseName 不能为空");
         }
@@ -277,13 +318,49 @@ public class atomManipulation implements atomManipulationInterface {
         try (java.util.stream.Stream<Path> files = Files.walk(directory, 1)) {
             return files.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString()
-                            .toLowerCase(Locale.ROOT).endsWith(".xml"))
+                            .toLowerCase(Locale.ROOT).endsWith(extension.toLowerCase(Locale.ROOT)))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException(
-                            "用例目录中未找到 PLCopen XML 文件：" + directory));
+                            "用例目录中未找到 " + extension + " 文件：" + directory));
         } catch (IOException e) {
-            throw new IllegalStateException("无法读取 PLCopen 文件目录：" + directory, e);
+            throw new IllegalStateException("无法读取用例文件目录：" + directory, e);
         }
+    }
+
+    /** 按 row_key 配对名称和实际值，等待所有变量的实际值返回后打印。 */
+    private void printWatchValues(WebDriverWait wait) {
+        Map<String, String> values = wait.until(d -> {
+            try {
+                Map<String, String> result = new LinkedHashMap<>();
+                Set<String> readRowKeys = new HashSet<>();
+                for (WebElement table : d.findElements(
+                        By.cssSelector(".watch-table-view-widget"))) {
+                    if (!table.isDisplayed()) continue;
+                    for (WebElement cell : table.findElements(
+                            By.cssSelector("td[column_key='varName'][row_key]"))) {
+                        String rowKey = cell.getDomAttribute("row_key");
+                        if (!readRowKeys.add(rowKey)) continue;
+                        java.util.List<WebElement> inputs = cell.findElements(By.cssSelector("input"));
+                        String name = (inputs.isEmpty() ? cell.getText()
+                                : inputs.get(0).getDomProperty("value")).trim();
+                        if (name.isEmpty() || name.equals("添加")) continue;
+                        java.util.List<WebElement> valueCells = table.findElements(By.cssSelector(
+                                "td[column_key='onlineValue'][row_key='" + rowKey + "']"));
+                        if (valueCells.isEmpty()) return null;
+                        String value = valueCells.get(0).getText().trim();
+                        if (value.isEmpty()) return null;
+                        if (result.putIfAbsent(name, value) != null) {
+                            throw new IllegalStateException("监控表名称重复，无法作为 Map 的唯一键：" + name);
+                        }
+                    }
+                }
+                return result.isEmpty() ? null : result;
+            } catch (StaleElementReferenceException e) {
+                // 监控刷新会替换单元格，下次轮询重新获取整组数据。
+                return null;
+            }
+        });
+        System.out.println(values);
     }
 
     /**
@@ -369,7 +446,7 @@ public class atomManipulation implements atomManipulationInterface {
         element.click();
         // 点击后弹窗可能立即刷新，不能再读取原 WebElement 的属性。
         System.out.println(clickedText + "完成");
-        sleep(1000);/** 点击结束睡一秒等待一下*/
+        sleep(500);/** 点击结束睡一秒等待一下*/
     }
 
     /** 在弹窗中选择列表项；优先点击该行的复选框，找不到复选框时再点击文本本身。 */

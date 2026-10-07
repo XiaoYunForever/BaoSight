@@ -14,4 +14,6 @@ public interface atomManipulationInterface {
     // 仿真下载
     public void simAndDownload();
 
+    public void observeVariables(String caseName);
+
 }
