@@ -18,7 +18,7 @@ public class opcua_atom extends atomManipulation {
     public void opcuaInitial() throws InterruptedException {
         System.out.println("OPC-UA初始化开始");
         //OPCUA原子操作
-
+        Thread.sleep(2000);
         By SCROLLER = By.cssSelector(".property-tree-container [data-test-id='virtuoso-scroller']");
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -63,14 +63,21 @@ public class opcua_atom extends atomManipulation {
         System.out.println("OPC-UA初始化完成");
     }
 
-    public void port(){
+    public void port() throws InterruptedException {
         //port:48400-48499
+        Thread.sleep(1000);
         By INPUT = By.cssSelector("input.baosky-common-number-input.property-input");
         WebElement opcport = driver.findElement(INPUT);
 
         opcport.clear();                          // 清空
         opcport.sendKeys("48408");
         System.out.println("端口修改完成");
+        Thread.sleep(2000);
+        //重置状态
+        WebElement renew = driver.findElement(By.cssSelector(".property-tree-container [data-test-id='virtuoso-scroller']"));
+        renew.click();
+
+        Thread.sleep(2000);
     }
 
     public void subscription(){
@@ -78,6 +85,7 @@ public class opcua_atom extends atomManipulation {
     }
 
     public void securityStrategy() throws InterruptedException {
+        Thread.sleep(2000);
         JavascriptExecutor js2 = (JavascriptExecutor) driver;
 
         String security = "[id$='-OpcUaSecurityPolicyGroup'] " +
@@ -95,15 +103,73 @@ public class opcua_atom extends atomManipulation {
         //因为async，所以unchecked
         System.out.println("结果: " + result);
 
-        Thread.sleep(5000);
+        Thread.sleep(2000);
     }
 
-    public void certification(){
-        System.out.println("证书配置完成");
+    public void certification() throws InterruptedException {
+        //添加证书
+        Thread.sleep(2000);
+        JavascriptExecutor js4 = (JavascriptExecutor) driver;
+
+        String groupSel = "[id$='-OpcUaCertificateManagementGroup']";
+
+        Object testresult = js4.executeScript(
+                "const group = document.querySelector(arguments[0]);" +
+                        "if (!group) return 'NO_GROUP';" +
+                        "const el = group.querySelector('.icon-add');" +
+                        "if (!el) return 'NO_ICON';" +
+                        "if (el.classList.contains('disabled-icon')) return 'DISABLED';" +  // 禁用就别点了
+                        "el.scrollIntoView({block:'center', behavior:'instant'});" +
+                        "['mousedown','mouseup','click'].forEach(t => {" +
+                        "  el.dispatchEvent(new MouseEvent(t, {bubbles:true, cancelable:true, view:window}));" +
+                        "});" +
+                        "return 'CLICKED';",
+                groupSel
+        );
+
+        System.out.println(testresult);
+        Thread.sleep(3000);
+        WebElement cert = driver.findElement(By.xpath("//button[contains(@class,'theia-button') and normalize-space(.)='确定']"));
+        cert.click();
+
+
+
+        //cert_config
+        //导入证书step1
+        Thread.sleep(3000);
+        JavascriptExecutor js5 = (JavascriptExecutor) driver;
+
+        Object qresult = js5.executeScript(
+                // 定位这一行的 select 容器
+                "const sel = document.querySelector(" +
+                        "  \"tr td[column_key='opcUaSecurityPolicyName'] .baosky-rc-select-container\"" +
+                        ");" +
+                        "if (!sel) return 'NO_SELECT';" +
+
+                        // 找到内部的 rc-select-selector（真正接收点击的）
+                        "const selector = sel.querySelector('.rc-select-selector');" +
+                        "if (!selector) return 'NO_SELECTOR';" +
+
+                        // 滚到中间
+                        "selector.scrollIntoView({block:'center', behavior:'instant'});" +
+
+                        // 模拟 mousedown 展开下拉框（rc-select 靠 mousedown 触发）
+                        "selector.dispatchEvent(new MouseEvent('mousedown', " +
+                        "  {bubbles:true, cancelable:true, view:window}));" +
+
+                        "return 'OPENED';"
+        );
+
+        System.out.println(qresult);
+        //导入证书step2：选择证书
+        Thread.sleep(3000);
+        WebElement certconfig2 = driver.findElement(By.xpath("//div[contains(@class,'rc-select-item-option-content') and normalize-space(.)='OPC_Cert_1']"));
+        certconfig2.click();
     }
 
     public void userAdministration() throws InterruptedException {
         //add user
+        Thread.sleep(2000);
         JavascriptExecutor js = (JavascriptExecutor) driver;
         By ICON = By.xpath(
                 "//div[contains(@class,'section-header')]" +
