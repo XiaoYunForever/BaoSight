@@ -15,7 +15,7 @@ public class opcua_atom extends atomManipulation {
         super(driver); // 继承父类的driver
     }
 
-    public void opcuaInitial() throws InterruptedException {
+    public void opcuaInitial() throws InterruptedException  {
         System.out.println("OPC-UA初始化开始");
         //OPCUA原子操作
         Thread.sleep(2000);
@@ -168,8 +168,39 @@ public class opcua_atom extends atomManipulation {
     }
 
     public void userAdministration() throws InterruptedException {
+        JavascriptExecutor js3 = (JavascriptExecutor) driver;
+
+        String labelText = "开启OPC UA用户管理";
+        Object user_result = js3.executeScript(
+                "const label = [...document.querySelectorAll('.setting-label')]" +
+                        "    .find(el => el.textContent.trim() === arguments[0]);" +
+                        "if (!label) return 'NO_LABEL';" +
+                        "const el = label.closest('.setting-item').querySelector('input.rc-checkbox-input');" +
+                        "if (!el) return 'NO_INPUT';" +
+                        "el.scrollIntoView({block:'center', behavior:'instant'});" +
+                        "['mousedown','mouseup','click'].forEach(t => {" +
+                        "  el.dispatchEvent(new MouseEvent(t, {bubbles:true, cancelable:true, view:window}));" +
+                        "});" +
+                        "return 'CLICKED';",
+                labelText
+        );
+
+        System.out.println(user_result);
+        Thread.sleep(300);
+
+        JavascriptExecutor jsr = (JavascriptExecutor) driver;
+        // 单独读状态
+        Boolean checked = (Boolean) jsr.executeScript(
+                "const label = [...document.querySelectorAll('.setting-label')]" +
+                        "    .find(el => el.textContent.trim() === arguments[0]);" +
+                        "const el = label.closest('.setting-item').querySelector('input.rc-checkbox-input');" +
+                        "return el.checked;",
+                labelText
+        );
+        System.out.println("checked = " + checked);
+
         //add user
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         JavascriptExecutor js = (JavascriptExecutor) driver;
         By ICON = By.xpath(
                 "//div[contains(@class,'section-header')]" +

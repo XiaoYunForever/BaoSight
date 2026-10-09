@@ -55,13 +55,13 @@ public class test {
         driver.get("https://localhost:5571");
 //        Thread.sleep(20000);
         //登录 Service版本
-        WebElement username = driver.findElement(By.id("username"));
-        username.sendKeys("admin");
-        Thread.sleep(2000);
-        WebElement password = driver.findElement(By.id("password"));
-        password.sendKeys("admin123");
-        Thread.sleep(2000);
-        password.sendKeys(Keys.ENTER);
+//        WebElement username = driver.findElement(By.id("username"));
+//        username.sendKeys("admin");
+//        Thread.sleep(2000);
+//        WebElement password = driver.findElement(By.id("password"));
+//        password.sendKeys("admin123");
+//        Thread.sleep(2000);
+//        password.sendKeys(Keys.ENTER);
 
         //delete
 //        WebElement oldproject = driver.findElement(By.xpath("//li[contains(@class,'p-MenuBar-item') and .//div[normalize-space()='项目']]"));

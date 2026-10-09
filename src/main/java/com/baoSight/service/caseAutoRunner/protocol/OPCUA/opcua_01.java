@@ -20,10 +20,13 @@ public class opcua_01 extends AbstractBrowserCase {
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
         actions.initialization();
-        actions.loadingPrograms(caseName);
-        actions.simAndDownload();
-        actions.observeVariables(caseName);
-        actions.readCPUAndLoad();
+        actions.opcuaInitial();
+        actions.port();
+        actions.subscription();
+        actions.securityStrategy();
+        actions.certification();
+        actions.userAdministration();
+        //ua 访问虚拟opcUA服务器
 
 
 
