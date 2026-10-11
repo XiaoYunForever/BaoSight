@@ -1,7 +1,9 @@
 package com.baoSight.service.taskDispatcher;
 
-import com.baoSight.DTO.UserTestDTO;
-import com.baoSight.DTO.caseDTO;
+
+import com.baoSight.DTO.api.request.CreateTestRequest;
+import com.baoSight.DTO.model.execution.CaseExecutionRequest;
+import com.baoSight.DTO.model.execution.CaseExecutionResult;
 import com.baoSight.service.caseAutoRunner.protocol.Protocol;
 import com.baoSight.service.evaluation.Evaluation;
 import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
@@ -25,8 +27,11 @@ public class mainRun {
     private ApplicationContext applicationContext;
 
 
-    public void run(UserTestDTO usertestdto) throws InterruptedException {
-        codelist = usertestdto.getCodelist();
+    public void run(CreateTestRequest createTestRequest) throws Exception {
+        codelist = createTestRequest.getCodelist();
+
+
+        CaseExecutionRequest caseExecutionRequest = new CaseExecutionRequest();
 
 
         //解析
@@ -43,7 +48,7 @@ public class mainRun {
 
             //自动化模块反射执行
             Protocol protocol = applicationContext.getBean("case"+"_"+caseName,Protocol.class);
-            protocol.start();
+            CaseExecutionResult result = protocol.start(caseExecutionRequest);
 
 
 //            //数据解析处理

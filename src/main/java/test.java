@@ -20,23 +20,23 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 public class test {
     public static void main(String[] args) throws InterruptedException, ExecutionException, UaException {
 
-//        String endpointUrl = "opc.tcp://192.168.1.1:4840";
-//        // 1. 发现端点
-//        List<EndpointDescription> endpoints = DiscoveryClient.getEndpoints(endpointUrl).get();
-//        EndpointDescription endpoint = endpoints.get(0);
-//        // 2. 配置客户端
-//        OpcUaClientConfig config = OpcUaClientConfig.builder()
-//                .setApplicationName(LocalizedText.english("Example Client"))
-////                .setApplicationUri("urn:example:client")
-//                .setEndpoint(endpoint)
-//                .setRequestTimeout(uint(5000))
-//                .build();
-//        // 3. 创建并连接
-//        OpcUaClient client = OpcUaClient.create(config);
-//        client.connect().get();
-//        System.out.println("Connected successfully");
-//        // 4. 断开连接
-//        client.disconnect().get();
+        String endpointUrl = "opc.tcp://172.19.92.239:4840";
+        // 1. 发现端点
+        List<EndpointDescription> endpoints = DiscoveryClient.getEndpoints(endpointUrl).get();
+        EndpointDescription endpoint = endpoints.get(0);
+        // 2. 配置客户端
+        OpcUaClientConfig config = OpcUaClientConfig.builder()
+                .setApplicationName(LocalizedText.english("Example Client"))
+//                .setApplicationUri("urn:example:client")
+                .setEndpoint(endpoint)
+                .setRequestTimeout(uint(5000))
+                .build();
+        // 3. 创建并连接
+        OpcUaClient client = OpcUaClient.create(config);
+        client.connect().get();
+        System.out.println("Connected successfully");
+        // 4. 断开连接
+        client.disconnect().get();
 
 
 

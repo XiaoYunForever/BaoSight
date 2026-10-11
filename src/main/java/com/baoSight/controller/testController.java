@@ -1,7 +1,8 @@
 package com.baoSight.controller;
 
 
-import com.baoSight.DTO.UserTestDTO;
+
+import com.baoSight.DTO.api.request.CreateTestRequest;
 import com.baoSight.service.taskDispatcher.mainRun;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,8 @@ public class testController {
     mainRun mainrun;
 
     @PostMapping("/test")
-    public UserTestDTO test(@RequestBody UserTestDTO usertestdto) throws InterruptedException {
-        mainrun.run(usertestdto);
-
-        return null;
+    public void test(@RequestBody CreateTestRequest createTestRequest) throws Exception {
+        mainrun.run(createTestRequest);
     }
 
 

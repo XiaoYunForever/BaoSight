@@ -30,18 +30,26 @@ public class OpcUaClientFactory {
     public static OpcUaClient connect(
             String endpointUrl,
             String username,
-            String password) throws Exception {
+            String password,
+            SecurityPolicy securityPolicy,
+            MessageSecurityMode securityMode) throws Exception {
 
-        if (endpointUrl == null
-                || !endpointUrl.trim().startsWith("opc.tcp://")) {
-            throw new IllegalArgumentException(
-                    "endpointUrl 必须是 opc.tcp:// 开头的服务器地址");
-        }
+        Objects.requireNonNull(endpointUrl, "服务器地址不能为空");
+        Objects.requireNonNull(securityPolicy, "安全策略不能为空");
+        Objects.requireNonNull(securityMode, "消息安全模式不能为空");
 
         boolean anonymous = username == null || username.trim().isEmpty();
 
         if (!anonymous) {
-            Objects.requireNonNull(password, "用户名密码登录时 password 不能为空");
+            Objects.requireNonNull(password, "用户名密码登录时密码不能为空");
+        }
+
+        // None 安全策略必须搭配 None 消息安全模式。
+        if ((securityPolicy == SecurityPolicy.None)
+                != (securityMode == MessageSecurityMode.None)) {
+            throw new IllegalArgumentException(
+                    "None 安全策略必须搭配 None 消息安全模式；"
+                            + "其他安全策略必须搭配 Sign 或 SignAndEncrypt");
         }
 
         UserTokenType tokenType = anonymous
@@ -55,22 +63,25 @@ public class OpcUaClientFactory {
         OpcUaClient client = OpcUaClient.create(
                 endpointUrl.trim(),
 
-                // 选择符合安全策略和身份认证要求的服务器端点。
                 endpoints -> endpoints.stream()
+                        // 匹配传入的安全策略。
                         .filter(endpoint ->
-                                SecurityPolicy.None.getUri().equals(
+                                securityPolicy.getUri().equals(
                                         endpoint.getSecurityPolicyUri()))
+
+                        // 匹配传入的消息安全模式。
                         .filter(endpoint ->
-                                MessageSecurityMode.None.equals(
-                                        endpoint.getSecurityMode()))
+                                securityMode.equals(endpoint.getSecurityMode()))
+
+                        // 匹配匿名或用户名密码登录方式。
                         .filter(endpoint ->
                                 endpoint.getUserIdentityTokens() != null
                                         && Arrays.stream(endpoint.getUserIdentityTokens())
                                         .anyMatch(token ->
                                                 tokenType.equals(token.getTokenType())))
+
                         .findFirst(),
 
-                // 端点由 create() 自动填入配置。
                 config -> config
                         .setApplicationName(
                                 LocalizedText.english("Java OPC UA Simulator"))
@@ -82,7 +93,6 @@ public class OpcUaClientFactory {
         );
 
         try {
-            // 等待会话建立成功，成功后才返回客户端。
             client.connect().get(10, TimeUnit.SECONDS);
             return client;
         } catch (Exception connectError) {
@@ -90,7 +100,6 @@ public class OpcUaClientFactory {
                 Thread.currentThread().interrupt();
             }
 
-            // 连接失败时尽力释放已创建的连接资源。
             try {
                 client.disconnect().get(3, TimeUnit.SECONDS);
             } catch (Exception cleanupError) {
@@ -103,4 +112,6 @@ public class OpcUaClientFactory {
             throw connectError;
         }
     }
+
+
 }

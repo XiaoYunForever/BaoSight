@@ -1,6 +1,8 @@
 package com.baoSight.service.caseAutoRunner.protocol;
 
-import com.baoSight.DTO.caseDTO;
+
+import com.baoSight.DTO.model.execution.CaseExecutionRequest;
+import com.baoSight.DTO.model.execution.CaseExecutionResult;
 import com.baoSight.service.caseAutoRunner.BrowserFactory;
 import com.baoSight.service.caseAutoRunner.BrowserSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,7 @@ public abstract class AbstractBrowserCase implements Protocol {
     private String ideUrl;
 
     @Override
-    public final void start() throws InterruptedException {
+    public final CaseExecutionResult start(CaseExecutionRequest caseExecutionRequest) throws Exception {
         BrowserFactory.Browser preferred = BrowserFactory.Browser.valueOf(
                 browserName.toUpperCase(Locale.ROOT));
 
@@ -35,13 +37,15 @@ public abstract class AbstractBrowserCase implements Protocol {
         // keepopen 为true 则案例结束后自动关闭浏览器
 
         if (keepOpen) {
-            executeCase(session);
+            CaseExecutionResult result= executeCase(session,caseExecutionRequest);
+            return result;
         } else {
             try (BrowserSession managed = session) {
-                executeCase(managed);
+                CaseExecutionResult result= executeCase(managed,caseExecutionRequest);
+                return result;
             }
         }
     }
 
-    protected abstract void executeCase(BrowserSession session) throws InterruptedException;
+    protected abstract CaseExecutionResult executeCase(BrowserSession session,CaseExecutionRequest caseExecutionRequest) throws Exception;
 }
