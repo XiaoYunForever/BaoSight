@@ -59,6 +59,11 @@
             <artifactId>sdk-client</artifactId>
             <version>${milo.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.milo</groupId>
+            <artifactId>sdk-server</artifactId>
+            <version>0.6.16</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

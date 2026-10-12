@@ -1,5 +1,6 @@
 package com.baoSight.service.caseAutoRunner.protocol.OPCUA;
 
+import com.baoSight.service.caseAutoRunner.protocol.OPCUA.opcuaSever.OpcuaSimulationServer;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
@@ -25,6 +26,8 @@ public class UaClient {
             //URI == ??
             //Username == ?
             // Password == ?
+            OpcuaSimulationServer opcuaSimulationServer =  new OpcuaSimulationServer();
+            opcuaSimulationServer.setup();
         }
         //NO Cert
         if(cerMode.equals("0")){

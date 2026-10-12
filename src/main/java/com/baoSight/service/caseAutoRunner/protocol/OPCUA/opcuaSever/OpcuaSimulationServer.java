@@ -4,10 +4,17 @@ import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
 import org.eclipse.milo.opcua.sdk.server.api.config.OpcUaServerConfig;
 import org.eclipse.milo.opcua.sdk.server.api.config.OpcUaServerConfigLimits;
 import org.eclipse.milo.opcua.sdk.server.identity.AnonymousIdentityValidator;
+import org.eclipse.milo.opcua.sdk.server.identity.IdentityValidator;
+import org.eclipse.milo.opcua.sdk.server.identity.UsernameIdentityValidator;
+import org.eclipse.milo.opcua.stack.core.security.CertificateManager;
 import org.eclipse.milo.opcua.stack.core.security.DefaultCertificateManager;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.UserTokenType;
+import org.eclipse.milo.opcua.stack.core.types.structured.UserTokenPolicy;
+import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder;
+import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator;
 import org.eclipse.milo.opcua.stack.server.EndpointConfiguration;
 import java.util.Collections;
 import com.baoSight.service.caseAutoRunner.protocol.atomManipulation;
@@ -15,6 +22,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.BindException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 
 import java.util.concurrent.ExecutionException;
 
@@ -25,13 +34,23 @@ public class OpcuaSimulationServer  {
     private int port;
     private boolean started;
     private boolean shutdownHookRegistered;
+    private final boolean usernamePasswordAccess;
     public static final String NAMESPACE_URI = "urn:baosight:opcua:demo";
+    private static final String USER_PASSWORD = "admin123";
     /** 服务器接受订阅监视项时允许的最小采样间隔，单位毫秒。 */
     public static final double MIN_SAMPLING_INTERVAL_MS = 250.0;
     /** 服务器接受订阅请求时允许的最小发布间隔，单位毫秒。 */
     public static final double MIN_PUBLISHING_INTERVAL_MS = 500.0;
 
     public OpcuaSimulationServer() {
+        this(false);
+    }
+
+    /**
+     * @param usernamePasswordAccess true 使用用户名密码登录，false 使用匿名登录
+     */
+    public OpcuaSimulationServer(boolean usernamePasswordAccess) {
+        this.usernamePasswordAccess = usernamePasswordAccess;
         try {
             initialize();
         } catch (IOException e) {
@@ -46,15 +65,30 @@ public class OpcuaSimulationServer  {
                 // ServerSocket 实现了Autoclose的接口，try结束之后，自动释放
                 port = socket.getLocalPort();
             }
-            EndpointConfiguration endpoint = EndpointConfiguration.newBuilder()
+            EndpointConfiguration.Builder endpointBuilder = EndpointConfiguration.newBuilder()
                     .setBindAddress("127.0.0.1")
                     .setHostname("localhost")
                     .setBindPort(port)
                     .setPath("/milo")
                     .setSecurityPolicy(SecurityPolicy.None)
-                    .setSecurityMode(MessageSecurityMode.None)
-                    .addTokenPolicy(OpcUaServerConfig.USER_TOKEN_POLICY_ANONYMOUS)
-                    .build();
+                    .setSecurityMode(MessageSecurityMode.None);
+            if (usernamePasswordAccess) {
+                UserTokenPolicy USER_TOKEN_POLICY_USERNAME_None = new UserTokenPolicy("username", UserTokenType.UserName, (String)null, (String)null, SecurityPolicy.None.getUri());
+                endpointBuilder.addTokenPolicy(USER_TOKEN_POLICY_USERNAME_None);
+            } else {
+                endpointBuilder.addTokenPolicy(OpcUaServerConfig.USER_TOKEN_POLICY_ANONYMOUS);
+            }
+
+            // 用户名密码令牌需要使用服务器证书加密。即使测试端点仍使用 None，
+            // 也必须把证书放进 endpoint 和 CertificateManager 中。
+//            CertificateManager certificateManager = createCertificateManager(endpointBuilder);
+            EndpointConfiguration endpoint = endpointBuilder.build();
+
+            IdentityValidator<?> identityValidator = usernamePasswordAccess
+                    ? new UsernameIdentityValidator(false, challenge ->
+                    (isValidUser(challenge.getUsername())
+                            && USER_PASSWORD.equals(challenge.getPassword())))
+                    : AnonymousIdentityValidator.INSTANCE;
             // 直接创建 SDK 服务器，不创建启动模拟事件线程的 ExampleNamespace。
             server = new OpcUaServer(OpcUaServerConfig.builder()
                     .setApplicationName(LocalizedText.english("BaoSight OPC UA Simulator"))
@@ -77,10 +111,35 @@ public class OpcuaSimulationServer  {
                             return MIN_SAMPLING_INTERVAL_MS;
                         }
                     })
-                    .setCertificateManager(new DefaultCertificateManager())
-                    .setIdentityValidator(AnonymousIdentityValidator.INSTANCE)
+                   // .setCertificateManager()
+                    .setIdentityValidator(identityValidator)
                     .build());
         demoNamespace = new Namespace(server,NAMESPACE_URI);
+    }
+
+    private CertificateManager createCertificateManager(EndpointConfiguration.Builder endpointBuilder)
+            throws IOException {
+        if (!usernamePasswordAccess) {
+            return new DefaultCertificateManager();
+        }
+        try {
+            KeyPair keyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048);
+            X509Certificate certificate = new SelfSignedCertificateBuilder(keyPair)
+                    .setCommonName("localhost")
+                    .setOrganization("BaoSight")
+                    .setApplicationUri("urn:baosight:opcua:simulator")
+                    .addDnsName("localhost")
+                    .addIpAddress("127.0.0.1")
+                    .build();
+            endpointBuilder.setCertificate(certificate);
+            return new DefaultCertificateManager(keyPair, certificate);
+        } catch (Exception e) {
+            throw new IOException("无法生成 OPC UA 用户认证所需的服务器证书", e);
+        }
+    }
+
+    private boolean isValidUser(String username) {
+        return "admin1".equals(username) || "admin2".equals(username);
     }
 
     /** 构造只初始化，调用此方法才挂载节点并开始监听。 */
