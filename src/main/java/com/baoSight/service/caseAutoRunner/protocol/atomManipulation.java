@@ -208,6 +208,12 @@ public class atomManipulation implements atomManipulationInterface {
     }
 
     public void observeVariables(String caseName) {
+        synchronized (driver) {
+            prepareWatchVariables(caseName);
+        }
+    }
+
+    private void prepareWatchVariables(String caseName) {
         ensureProjectPage();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         Path csvFile = findImportFile(caseName, ".csv");//
@@ -235,7 +241,11 @@ public class atomManipulation implements atomManipulationInterface {
         By monitorButton = By.cssSelector(
                 "div.iconsvg-monitor[test-id$='.wt-config-table-editor-watch-watch-table']");
         clickVisible(wait, monitorButton);
-        printWatchValues(wait);
+        Map<String, String> initialValues = wait.until(d -> {
+            Map<String, String> values = getWatchValues();
+            return values.isEmpty() ? null : values;
+        });
+        System.out.println(initialValues);
     }
 
 
@@ -352,40 +362,44 @@ public class atomManipulation implements atomManipulationInterface {
         }
     }
 
-    /** 按 row_key 配对名称和实际值，等待所有变量的实际值返回后打印。 */
-    private void printWatchValues(WebDriverWait wait) {
-        Map<String, String> values = wait.until(d -> {
-            try {
-                Map<String, String> result = new LinkedHashMap<>();
-                Set<String> readRowKeys = new HashSet<>();
-                for (WebElement table : d.findElements(
-                        By.cssSelector(".watch-table-view-widget"))) {
-                    if (!table.isDisplayed()) continue;
-                    for (WebElement cell : table.findElements(
-                            By.cssSelector("td[column_key='varName'][row_key]"))) {
-                        String rowKey = cell.getDomAttribute("row_key");
-                        if (!readRowKeys.add(rowKey)) continue;
-                        java.util.List<WebElement> inputs = cell.findElements(By.cssSelector("input"));
-                        String name = (inputs.isEmpty() ? cell.getText()
-                                : inputs.get(0).getDomProperty("value")).trim();
-                        if (name.isEmpty() || name.equals("添加")) continue;
-                        java.util.List<WebElement> valueCells = table.findElements(By.cssSelector(
-                                "td[column_key='onlineValue'][row_key='" + rowKey + "']"));
-                        if (valueCells.isEmpty()) return null;
-                        String value = valueCells.get(0).getText().trim();
-                        if (value.isEmpty()) return null;
-                        if (result.putIfAbsent(name, value) != null) {
-                            throw new IllegalStateException("监控表名称重复，无法作为 Map 的唯一键：" + name);
-                        }
-                    }
+    /** 单次读取监控表快照；页面未就绪时返回空 Map，下次采集再试。 */
+    public Map<String, String> getWatchValues() {
+        synchronized (driver) {
+            // 一次脚本读取 DOM，避免多次 Selenium 请求之间表格重绘，也不受隐式等待影响。
+            String script = "const tables = [...document.querySelectorAll('.watch-table-view-widget')]"
+                    + ".filter(t => t.getClientRects().length && getComputedStyle(t).visibility !== 'hidden');"
+                    + "const rows = []; const seen = new Set();"
+                    + "for (const table of tables) {"
+                    + "const valueCells = [...table.querySelectorAll('td[column_key=onlineValue][row_key]')];"
+                    + "const typeCells = [...table.querySelectorAll('td[column_key=dataType][row_key]')];"
+                    + "for (const cell of table.querySelectorAll('td[column_key=varName][row_key]')) {"
+                    + "const key = cell.getAttribute('row_key'); if (seen.has(key)) continue; seen.add(key);"
+                    + "const input = cell.querySelector('input');"
+                    + "const name = (input ? input.value : cell.innerText).trim();"
+                    + "if (!name || name === '添加') continue;"
+                    + "const typeCell = typeCells.find(c => c.getAttribute('row_key') === key);"
+                    + "const valueCell = valueCells.find(c => c.getAttribute('row_key') === key);"
+                    + "if (!typeCell || !valueCell || !typeCell.innerText.trim() || !valueCell.innerText.trim()) return [];"
+                    + "rows.push([name, typeCell.innerText.trim(), valueCell.innerText.trim()]); }} return rows;";
+            java.util.List<?> rows = (java.util.List<?>) ((JavascriptExecutor) driver).executeScript(script);
+            Map<String, String> result = new LinkedHashMap<>();
+            for (Object item : rows) {
+                java.util.List<?> row = (java.util.List<?>) item;
+                String name = (String) row.get(0);
+                String dataType = normalizeDataType((String) row.get(1));
+                String value = dataType + (String) row.get(2);
+                if (result.putIfAbsent(name, value) != null) {
+                    throw new IllegalStateException("监控表名称重复，无法作为 Map 的唯一键：" + name);
                 }
-                return result.isEmpty() ? null : result;
-            } catch (StaleElementReferenceException e) {
-                // 监控刷新会替换单元格，下次轮询重新获取整组数据。
-                return null;
             }
-        });
-        System.out.println(values);
+            return result;
+        }
+    }
+
+    /** 将 DWORD/DWORD 规范为 DWORD/，再与实际值拼接。 */
+    private String normalizeDataType(String dataType) {
+        int slash = dataType.indexOf('/');
+        return (slash >= 0 ? dataType.substring(0, slash) : dataType).trim() + "/";
     }
 
     /**

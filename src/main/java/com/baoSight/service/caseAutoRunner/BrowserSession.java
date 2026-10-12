@@ -41,6 +41,9 @@ public final class BrowserSession implements AutoCloseable {
 
     @Override
     public void close() {
-        driver.quit();
+        synchronized (driver){
+            driver.quit();
+        }
+
     }
 }
