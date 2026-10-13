@@ -2,7 +2,8 @@ package com.baoSight.service.caseAutoRunner.protocol.OPCUA;
 
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
-import com.baoSight.DTO.model.execution.opcua.OpcUaRequestData;
+import com.baoSight.DTO.model.execution.opcua.OpcUaCaseData;
+import com.baoSight.enums.ExecutionMode;
 import com.baoSight.service.caseAutoRunner.protocol.AbstractBrowserCase;
 import com.baoSight.service.caseAutoRunner.BrowserSession;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
@@ -23,7 +24,8 @@ public class opcua_01 extends AbstractBrowserCase {
 
     @Override
     protected CaseExecutionResult executeCase(BrowserSession session, CaseExecutionRequest caseExecutionRequest) throws Exception {
-        OpcUaRequestData opcUaRequestData;
+
+        String caseName = "default";
 
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
@@ -31,19 +33,40 @@ public class opcua_01 extends AbstractBrowserCase {
         actions.opcuaInitial();
         actions.port("48488");//48400-48499
         actions.subscription();
-        actions.securityStrategy();
-        actions.certification();
-        actions.userAdministration("admin1","admin123");
-
-        //创建ua客户端的数据类 并 初始化
-        opcUaRequestData = opcuaDataBuilder(caseExecutionRequest);
-        opcUaRequestData.setActions(actions);
-        opcUaRequestData.setUsername("admin1");
-        opcUaRequestData.setPassword("admin123");
-        opcUaRequestData.setCertMode("0");
-
+        //actions.securityStrategy();
+        //actions.certification();
+        //actions.userAdministration("admin1","admin123");
+        actions.loadingPrograms(caseName);
+        actions.simAndDownload();
         //ua 访问虚拟opcUA服务器
-        OpcUaClient client =UaClient.UaConnect(opcUaRequestData);
+        OpcUaCaseData opcUaCaseData = new OpcUaCaseData();
+
+        //解析数据
+        ExecutionMode exmode = caseExecutionRequest.getMode();
+
+        // 只启动虚拟服务器，不看变量表
+        UaClient.ConnectConfig connectConfig = UaClient.ConnectConfig.builder()
+                .userName(null)
+                .password(null)
+                .cerMode("0")
+                .mode(exmode)
+                .actions(null)
+                //.caseName(caseName)
+                .build();
+        OpcUaClient client = null;
+        try {
+            client = UaClient.UaConnect(connectConfig);
+            opcUaCaseData.setConnected(true);
+        } catch (InterruptedException e) { //等待连接时，线程被中断
+            Thread.currentThread().interrupt();
+            throw e;
+        } catch (Exception e) { // 连接失败
+            opcUaCaseData.setConnected(false);
+            opcUaCaseData.setServerTimeText(null);
+            System.err.println("OPC UA 连接失败，跳过读取并继续后续流程：" + e.getMessage());
+        }
+
+        if (client != null) {
         try {
             DataValue value = client.readValue(
                     0.0,
@@ -53,16 +76,18 @@ public class opcua_01 extends AbstractBrowserCase {
 
             System.out.println("读取状态：" + value.getStatusCode());
             System.out.println("服务器时间：" + value.getValue().getValue());
+            opcUaCaseData.setServerTimeText(String.valueOf(value.getValue().getValue()));
         } finally {
             client.disconnect().get(5, TimeUnit.SECONDS);
+        }
         }
 
 
 
 
-        CaseExecutionResult result = new CaseExecutionResult();
-
-        return result;
+        CaseExecutionResult r = new CaseExecutionResult();
+        r.setOpcUaCaseData(opcUaCaseData);
+        return r;
     }
 }
 /*
