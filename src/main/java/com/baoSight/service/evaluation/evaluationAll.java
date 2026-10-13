@@ -1,14 +1,28 @@
 package com.baoSight.service.evaluation;
 
 import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
-import com.baoSight.DTO.model.execution.CaseExecutionResult;
-import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
+import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
 
-public class evaluationAll implements Dataprocess {
+import java.math.BigDecimal;
+import java.util.ArrayList;
 
-    @Override
-    public CaseAnalysisResult process(CaseExecutionResult rawData) {
 
-        return null;
+public class evaluationAll{
+    private int totalScore;
+    private int MaxScore;
+    private float finalScore;
+
+    public float evaluate(ArrayList<CaseEvaluationResult> caseEvaluationResultList) {
+        MaxScore = 0;
+        for(CaseEvaluationResult caseEvaluationResult:caseEvaluationResultList){
+            MaxScore = MaxScore + caseEvaluationResult.getMaxScore();
+        }
+        totalScore = 0;
+        for(CaseEvaluationResult caseEvaluationResult:caseEvaluationResultList){
+            totalScore = totalScore + caseEvaluationResult.getScore();
+        }
+        finalScore = ((float) totalScore / (float) MaxScore) * 100;
+
+        return finalScore;
     }
 }

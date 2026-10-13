@@ -39,7 +39,7 @@ public class opcua_01 extends AbstractBrowserCase {
         actions.loadingPrograms(caseName);
         actions.simAndDownload();
         //ua 访问虚拟opcUA服务器
-        OpcUaCaseData  opcUaCaseData = new OpcUaCaseData();
+        OpcUaCaseData opcUaCaseData = new OpcUaCaseData();
 
         //解析数据
         ExecutionMode exmode = caseExecutionRequest.getMode();
@@ -90,3 +90,10 @@ public class opcua_01 extends AbstractBrowserCase {
         return r;
     }
 }
+/*
+     写一个客户端连接原子操作，然后在连接方法下判断是否使用仿真服务器，
+     若使用，则启动仿真服务器，并将地址改到仿真服务器。
+     若不使用，不启动服务器，地址使用PLC地址
+
+
+ */

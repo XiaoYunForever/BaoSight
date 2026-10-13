@@ -1,4 +1,4 @@
-package com.baoSight.service.taskDispatcher.dataProcess;
+package com.baoSight.service.dataProcess;
 
 import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
