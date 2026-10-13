@@ -2,8 +2,11 @@ package com.baoSight.service.taskDispatcher;
 
 
 import com.baoSight.DTO.api.request.CreateTestRequest;
+import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
+import com.baoSight.DTO.model.common.DeviceInfo;
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
+import com.baoSight.enums.ExecutionMode;
 import com.baoSight.service.caseAutoRunner.protocol.Protocol;
 import com.baoSight.service.evaluation.Evaluation;
 import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
@@ -30,9 +33,10 @@ public class mainRun {
     public void run(CreateTestRequest createTestRequest) throws Exception {
         codelist = createTestRequest.getCodelist();
 
-
+        // 解析数据类
         CaseExecutionRequest caseExecutionRequest = new CaseExecutionRequest();
-
+        caseExecutionRequest.setDevice(createTestRequest.getDevice());
+        caseExecutionRequest.setMode(createTestRequest.getMode());// 把执行模式从前端传递下来
 
         //解析
         for(int i=0;i<codelist.size();i++){
@@ -51,13 +55,17 @@ public class mainRun {
             CaseExecutionResult result = protocol.start(caseExecutionRequest);
 
 
-//            //数据解析处理
-//            Dataprocess dataprocess = applicationContext.getBean("dataprocess"+"_"+caseName,Dataprocess.class);
-//            dataprocess.process(usertestdto);
+            System.out.println("value " + result.getOpcUaCaseData().getServerTimeText());
+            System.out.println("connected " + result.getOpcUaCaseData().isConnected());
 
-            //简易评分
-            Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
-            evaluation.evaluate();
+
+//          //数据解析处理
+//            Dataprocess dataprocess = applicationContext.getBean("data"+"_"+caseName,Dataprocess.class);
+//            CaseAnalysisResult processResult = dataprocess.process(result);
+
+//            //简易评分
+//            Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
+//            evaluation.evaluate();
             //
         }
 

@@ -31,13 +31,13 @@ public class atomManipulation implements atomManipulationInterface {
     public void initialization() throws InterruptedException {
         System.out.println("初始化开始\n");
         //登录 Service版本
-        WebElement username = driver.findElement(By.id("username"));
-        username.sendKeys("admin");
-        Thread.sleep(2000);
-        WebElement password = driver.findElement(By.id("password"));
-        password.sendKeys("admin123");
-        Thread.sleep(2000);
-        password.sendKeys(Keys.ENTER);
+//        WebElement username = driver.findElement(By.id("username"));
+//        username.sendKeys("admin");
+//        Thread.sleep(2000);
+//        WebElement password = driver.findElement(By.id("password"));
+//        password.sendKeys("admin123");
+//        Thread.sleep(2000);
+//        password.sendKeys(Keys.ENTER);
 
         //创建项目
         WebElement newproject = driver.findElement(By.className("start-up-new-project"));
