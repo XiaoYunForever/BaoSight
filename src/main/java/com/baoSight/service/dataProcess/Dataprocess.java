@@ -1,4 +1,4 @@
-package com.baoSight.service.taskDispatcher.dataProcess;
+package com.baoSight.service.dataProcess;
 
 public interface Dataprocess {
 
