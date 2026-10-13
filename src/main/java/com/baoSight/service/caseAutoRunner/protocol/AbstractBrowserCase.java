@@ -3,6 +3,7 @@ package com.baoSight.service.caseAutoRunner.protocol;
 
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
+import com.baoSight.DTO.model.execution.opcua.OpcUaRequestData;
 import com.baoSight.service.caseAutoRunner.BrowserFactory;
 import com.baoSight.service.caseAutoRunner.BrowserSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,14 @@ public abstract class AbstractBrowserCase implements Protocol {
                 return result;
             }
         }
+    }
+
+    @Override
+    public OpcUaRequestData opcuaDataBuilder(CaseExecutionRequest caseExecutionRequest){
+            OpcUaRequestData opcUaRequestData = new OpcUaRequestData();
+            opcUaRequestData.setCaseName(caseExecutionRequest.getCaseCode());
+            opcUaRequestData.setMode(caseExecutionRequest.getMode());
+        return opcUaRequestData;
     }
 
     protected abstract CaseExecutionResult executeCase(BrowserSession session,CaseExecutionRequest caseExecutionRequest) throws Exception;

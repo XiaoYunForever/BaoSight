@@ -1,5 +1,8 @@
 package com.baoSight.service.evaluation;
 
+import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
+import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
+
 public interface Evaluation {
-    public void evaluate();
+    public CaseEvaluationResult evaluate(CaseAnalysisResult  caseAnalysisResult);
 }

@@ -2,6 +2,7 @@ package com.baoSight.service.caseAutoRunner.protocol.OPCUA;
 
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
+import com.baoSight.DTO.model.execution.opcua.OpcUaRequestData;
 import com.baoSight.service.caseAutoRunner.protocol.AbstractBrowserCase;
 import com.baoSight.service.caseAutoRunner.BrowserSession;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
@@ -22,8 +23,7 @@ public class opcua_01 extends AbstractBrowserCase {
 
     @Override
     protected CaseExecutionResult executeCase(BrowserSession session, CaseExecutionRequest caseExecutionRequest) throws Exception {
-
-        String caseName = "opcua01";
+        OpcUaRequestData opcUaRequestData;
 
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
@@ -34,8 +34,16 @@ public class opcua_01 extends AbstractBrowserCase {
         actions.securityStrategy();
         actions.certification();
         actions.userAdministration("admin1","admin123");
+
+        //创建ua客户端的数据类 并 初始化
+        opcUaRequestData = opcuaDataBuilder(caseExecutionRequest);
+        opcUaRequestData.setActions(actions);
+        opcUaRequestData.setUsername("admin1");
+        opcUaRequestData.setPassword("admin123");
+        opcUaRequestData.setCertMode("0");
+
         //ua 访问虚拟opcUA服务器
-        OpcUaClient client =UaClient.UaConnect("1","0",null,null);
+        OpcUaClient client =UaClient.UaConnect(opcUaRequestData);
         try {
             DataValue value = client.readValue(
                     0.0,
@@ -52,8 +60,9 @@ public class opcua_01 extends AbstractBrowserCase {
 
 
 
-        CaseExecutionResult r = new CaseExecutionResult();
-        return r;
+        CaseExecutionResult result = new CaseExecutionResult();
+
+        return result;
     }
 }
 /*

@@ -1,6 +1,6 @@
-package com.baoSight.service.taskDispatcher.dataProcess.OPCUA;
+package com.baoSight.service.dataProcess.OPCUA;
 
-import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
+import com.baoSight.service.dataProcess.Dataprocess;
 import org.springframework.stereotype.Service;
 
 @Service("data_opcua_01")

@@ -2,16 +2,19 @@ package com.baoSight.service.taskDispatcher;
 
 
 import com.baoSight.DTO.api.request.CreateTestRequest;
+import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
+import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
 import com.baoSight.service.caseAutoRunner.protocol.Protocol;
 import com.baoSight.service.evaluation.Evaluation;
-import com.baoSight.service.taskDispatcher.dataProcess.Dataprocess;
+import com.baoSight.service.evaluation.evaluationAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class mainRun {
@@ -19,6 +22,9 @@ public class mainRun {
     String code;
     Character protocolNum;
     String caseNum;
+
+    ArrayList<CaseEvaluationResult>  caseEvaluationResultList;
+    float finalScore;
 
     String protocolName;
     String caseName;
@@ -56,14 +62,21 @@ public class mainRun {
 //            dataprocess.process(usertestdto);
 
             //简易评分
+
+            //临时模拟
+            CaseAnalysisResult caseAnalysisResult = new CaseAnalysisResult();
+
             Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
-            evaluation.evaluate();
+            CaseEvaluationResult evalu_result = evaluation.evaluate(caseAnalysisResult);
+            caseEvaluationResultList.add(evalu_result);
             //
         }
 
 
         //总评分模块
-//        score1*(5/5+9+7+5)+
+        evaluationAll evaluationAll = new evaluationAll();
+        finalScore = evaluationAll.evaluate(caseEvaluationResultList);
+
 
         //报告生成
         //RESULT
