@@ -48,13 +48,6 @@ public abstract class AbstractBrowserCase implements Protocol {
         }
     }
 
-    @Override
-    public OpcUaCaseData opcuaDataBuilder(CaseExecutionRequest caseExecutionRequest){
-            OpcUaCaseData opcUaRequestData = new OpcUaCaseData();
-            opcUaRequestData.setCaseName(caseExecutionRequest.getCaseCode());
-            opcUaRequestData.setMode(caseExecutionRequest.getMode());
-        return opcUaRequestData;
-    }
 
     protected abstract CaseExecutionResult executeCase(BrowserSession session,CaseExecutionRequest caseExecutionRequest) throws Exception;
 }
