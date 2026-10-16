@@ -30,13 +30,14 @@ public class UaClient {
             //Username == ?
             // Password == ?
             // 默认匿名
-            OpcuaSimulationServer opcuaSimulationServer =  new OpcuaSimulationServer();
+            OpcuaSimulationServer opcuaSimulationServer =  new OpcuaSimulationServer(true);
             if(config.actions != null) {
                 opcuaSimulationServer.setup(config.actions, config.caseName);
             }else {
                 opcuaSimulationServer.setup();
             }
             URI = opcuaSimulationServer.getEndpointUrl();
+
         }
         //NO Cert
         if(config.cerMode.equals("0")){
