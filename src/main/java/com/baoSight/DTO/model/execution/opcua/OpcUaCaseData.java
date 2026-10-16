@@ -8,4 +8,6 @@ import lombok.Data;
 public class OpcUaCaseData {
     private boolean connected;
     private String serverTimeText;
+    private String caseCode;
+    private String errorText;
 }

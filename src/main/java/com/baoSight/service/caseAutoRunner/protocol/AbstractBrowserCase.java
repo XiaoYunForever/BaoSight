@@ -49,5 +49,6 @@ public abstract class AbstractBrowserCase implements Protocol {
     }
 
 
+
     protected abstract CaseExecutionResult executeCase(BrowserSession session,CaseExecutionRequest caseExecutionRequest) throws Exception;
 }

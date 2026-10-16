@@ -37,6 +37,7 @@ public class UaClient {
                 opcuaSimulationServer.setup();
             }
             URI = opcuaSimulationServer.getEndpointUrl();
+
         }
         //NO Cert
         if(config.cerMode.equals("0")){
