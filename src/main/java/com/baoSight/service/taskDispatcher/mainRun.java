@@ -39,6 +39,7 @@ public class mainRun {
     public void run(CreateTestRequest createTestRequest) throws Exception {
         codelist = createTestRequest.getCodelist();
 
+
         // 解析数据类
         CaseExecutionRequest caseExecutionRequest = new CaseExecutionRequest();
         caseExecutionRequest.setDevice(createTestRequest.getDevice());
@@ -65,25 +66,19 @@ public class mainRun {
             System.out.println("connected " + result.getOpcUaCaseData().isConnected());
 
 
-//          //数据解析处理
-//            Dataprocess dataprocess = applicationContext.getBean("data"+"_"+caseName,Dataprocess.class);
-//            CaseAnalysisResult processResult = dataprocess.process(result);
-
-            //简易评分
-
             //临时模拟
-            CaseAnalysisResult caseAnalysisResult = new CaseAnalysisResult();
-
-            Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
-            CaseEvaluationResult evalu_result = evaluation.evaluate(caseAnalysisResult);
-            caseEvaluationResultList.add(evalu_result);
+//            CaseAnalysisResult caseAnalysisResult = new CaseAnalysisResult();
+//
+//            Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
+//            CaseEvaluationResult evalu_result = evaluation.evaluate(caseAnalysisResult);
+//            caseEvaluationResultList.add(evalu_result);
             //
         }
 
 
         //总评分模块
-        evaluationAll evaluationAll = new evaluationAll();
-        finalScore = evaluationAll.evaluate(caseEvaluationResultList);
+//        evaluationAll evaluationAll = new evaluationAll();
+//        finalScore = evaluationAll.evaluate(caseEvaluationResultList);
 
 
         //报告生成

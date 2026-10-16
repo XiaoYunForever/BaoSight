@@ -7,5 +7,4 @@ import com.baoSight.DTO.model.execution.opcua.OpcUaCaseData;
 
 public interface Protocol {
     public CaseExecutionResult start(CaseExecutionRequest caseExecutionRequest) throws Exception;
-    public OpcUaCaseData opcuaDataBuilder(CaseExecutionRequest caseExecutionRequest);
 }
