@@ -73,6 +73,7 @@ public class OpcuaSimulationServer  {
                     .setSecurityPolicy(SecurityPolicy.None)
                     .setSecurityMode(MessageSecurityMode.None);
             if (usernamePasswordAccess) {
+                System.out.println("用户登录成功");
                 UserTokenPolicy USER_TOKEN_POLICY_USERNAME_None = new UserTokenPolicy("username", UserTokenType.UserName, (String)null, (String)null, SecurityPolicy.None.getUri());
                 endpointBuilder.addTokenPolicy(USER_TOKEN_POLICY_USERNAME_None);
             } else {

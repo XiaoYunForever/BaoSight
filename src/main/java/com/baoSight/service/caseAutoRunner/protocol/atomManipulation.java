@@ -43,7 +43,9 @@ public class atomManipulation implements atomManipulationInterface {
         WebElement newproject = driver.findElement(By.className("start-up-new-project"));
         newproject.click();
         sleep(2000);
+        System.out.println("start");
         WebElement projectname = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/label[1]/div[2]/input"));
+        System.out.println(projectname.getAttribute("value"));
         projectname.sendKeys("aqq1g2");
 
         //project path

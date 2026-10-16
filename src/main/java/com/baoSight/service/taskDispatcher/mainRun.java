@@ -26,7 +26,6 @@ public class mainRun {
     Character protocolNum;
     String caseNum;
 
-    CaseEvaluationResult  caseEvaluationResult;
     ArrayList<CaseEvaluationResult>  caseEvaluationResultList;
     float finalScore;
 
