@@ -10,4 +10,5 @@ public class CaseEvaluationResult {
     private String caseCode;
     private int score;
     private int maxScore;
+
 }

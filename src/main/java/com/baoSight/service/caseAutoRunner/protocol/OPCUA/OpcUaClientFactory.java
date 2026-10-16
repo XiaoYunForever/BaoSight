@@ -55,7 +55,6 @@ public class OpcUaClientFactory {
         UserTokenType tokenType = anonymous
                 ? UserTokenType.Anonymous
                 : UserTokenType.UserName;
-
         IdentityProvider identityProvider = anonymous
                 ? new AnonymousProvider()
                 : new UsernameProvider(username, password);
