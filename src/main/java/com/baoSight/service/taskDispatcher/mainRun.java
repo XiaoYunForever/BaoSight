@@ -2,9 +2,6 @@ package com.baoSight.service.taskDispatcher;
 
 
 import com.baoSight.DTO.api.request.CreateTestRequest;
-import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
-import com.baoSight.DTO.model.common.DeviceInfo;
-import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
 import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
@@ -41,7 +38,7 @@ public class mainRun {
         caseEvaluationResultList = new ArrayList<>();
         // 解析数据类
         CaseExecutionRequest caseExecutionRequest = new CaseExecutionRequest();
-        caseExecutionRequest.setDevice(createTestRequest.getDevice());
+//        caseExecutionRequest.setDevice(createTestRequest.getDevice());
         caseExecutionRequest.setMode(createTestRequest.getMode());// 把执行模式从前端传递下来
 
         //解析

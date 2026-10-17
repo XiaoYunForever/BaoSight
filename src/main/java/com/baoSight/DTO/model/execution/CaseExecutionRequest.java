@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class CaseExecutionRequest {
     private String caseCode;
-    private DeviceInfo device;
+//    private DeviceInfo device;
     private ExecutionMode mode;
     private String connectionProfileId;
 }

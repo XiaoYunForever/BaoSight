@@ -11,7 +11,7 @@ public class CreateTestRequest {
     // 测试案例编号
     private ArrayList<String> codelist;
     // 设备信息
-    private DeviceInfo device;
+//    private DeviceInfo device;
     //PLC or Simulation
     private ExecutionMode mode;
 }

@@ -29,15 +29,15 @@ public class opcua_01 extends AbstractBrowserCase {
 
         opcua_atom actions = new opcua_atom(session.getDriver());
         // 原子操作
-        actions.initialization();
-        actions.opcuaInitial();
-        //actions.port("48488");//48400-48499
-        actions.subscription();
-        actions.securityStrategy();
-        actions.certification();
-        actions.userAdministration("admin1","admin123");
-        actions.loadingPrograms(caseName);
-        //actions.simAndDownload();
+//        actions.initialization();
+//        actions.opcuaInitial();
+//        //actions.port("48488");//48400-48499
+//        actions.subscription();
+//        actions.securityStrategy();
+//        actions.certification();
+//        actions.userAdministration("admin1","admin123");
+//        actions.loadingPrograms(caseName);
+//        actions.simAndDownload();
         //ua 访问虚拟opcUA服务器
         OpcUaCaseData opcUaCaseData = new OpcUaCaseData();
 
