@@ -23,7 +23,7 @@ class Opcua01StartTest {
         CreateTestRequest request = new CreateTestRequest();
         request.setCodelist(new ArrayList<>(Collections.singletonList("601")));
         request.setMode(ExecutionMode.SIMULATION);
-        request.setDevice(new DeviceInfo());
+//        request.setDevice(new DeviceInfo());
 
         // 注意：目前 mainRun.run() 内部还会覆盖上述请求参数。
         try (AnnotationConfigApplicationContext context =

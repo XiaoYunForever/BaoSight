@@ -1,6 +1,6 @@
 package com.baoSight.service.evaluation.OPCUA;
 
-import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
+
 import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
 import com.baoSight.enums.ExecutionMode;
