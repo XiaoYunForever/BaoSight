@@ -20,12 +20,56 @@ import java.util.stream.Stream;
 public class atomManipulation implements atomManipulationInterface {
     // 项目页通过 URL 片段标识，域名和项目名可以变化。
     private static final String PROJECT_PAGE_MARKER = "#bsprojects:";
-    /** 通用操作和协议操作共用本次用例的浏览器，原子操作不负责关闭它。 */
+    /** 通用操作和协议操作共用本次用例的浏览器；close 完成项目清理后关闭会话。 */
     //driver是浏览器控制器，实现原子操作，必须先通过session创建会话创建driver，通过对应的driver驱动原子操作
     protected final WebDriver driver;//
 
     public atomManipulation(WebDriver driver) {
         this.driver = Objects.requireNonNull(driver, "driver 不能为空");
+    }
+
+    /** 关闭当前项目、全选删除项目列表中的项目，最后释放本次浏览器会话。 */
+    @Override
+    public void close() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        By projectMenu = By.xpath("//*[@id='theia:menubar']"
+                + "//div[contains(concat(' ', normalize-space(@class), ' '), ' p-MenuBar-itemLabel ')"
+                + " and normalize-space(.)='项目']");
+        By deleteDialog = By.cssSelector(".dialogOverlay.project-delete-dialog");
+        // 确认框按按钮定位，不会匹配后面的“删除”按钮。
+        By confirmButton = By.xpath("//*[@id='theia-dialog-shell']//button[normalize-space(.)='确定']");
+        RuntimeException failure = null;
+        try {
+            clickVisible(wait, projectMenu);
+            clickVisible(wait, By.cssSelector(
+                    ".p-MenuBar-menu [data-command='project.close']:not(.p-mod-disabled)"));
+            findVisibleElement(wait, By.className("start-up-new-project"));
+
+            clickVisible(wait, projectMenu);
+            clickVisible(wait, By.cssSelector(
+                    ".p-MenuBar-menu [data-command='project.delete']:not(.p-mod-disabled)"));
+            // 只点击表头的全选控件，避免选到某一行的复选框。
+            findDialogElement(wait, deleteDialog, By.cssSelector(
+                    "thead th[column_key='checkbox'] .title-content-container")).click();
+            System.out.println("已点击项目全选，等待删除按钮可点击");
+            clickDialogVisible(wait, deleteDialog, By.xpath(
+                    ".//div[contains(@class,'project-delete-dialog-control')]"
+                            + "/button[normalize-space(.)='删除']"));
+            System.out.println("已点击删除，等待确认弹窗");
+            clickVisible(wait, confirmButton);
+            waitForInvisible(wait, confirmButton);
+        } catch (RuntimeException e) {
+            failure = e;
+            throw e;
+        } finally {
+            // UI 清理失败也释放浏览器；保留原始错误，供调用方记录失败原因。
+            try {
+                driver.quit();
+            } catch (RuntimeException cleanup) {
+                if (failure != null) failure.addSuppressed(cleanup);
+                else throw cleanup;
+            }
+        }
     }
 
     public void initialization() throws InterruptedException {
@@ -40,13 +84,13 @@ public class atomManipulation implements atomManipulationInterface {
 //        password.sendKeys(Keys.ENTER);
 
         //创建项目
-        WebElement newproject = driver.findElement(By.className("start-up-new-project"));
-        newproject.click();
-        sleep(2000);
-        System.out.println("start");
-        WebElement projectname = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/label[1]/div[2]/input"));
-        System.out.println(projectname.getAttribute("value"));
-        projectname.sendKeys("aqq1g2");
+        // 解决新建项目输入卡住的问题
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        clickVisible(wait, By.className("start-up-new-project"));
+        WebElement projectname = findDialogElement(wait, By.xpath(
+                ".//label[./div[normalize-space(.)='名称']]//input[@type='text']"));
+        projectname.clear();
+        projectname.sendKeys("PLCtest");
 
         //project path
         WebElement path = driver.findElement(By.xpath("/html/body/div[7]/div/div[2]/div/div[2]/div[2]/div"));
@@ -270,21 +314,21 @@ public class atomManipulation implements atomManipulationInterface {
         }
     }
     // 普通按键点击，通过关键词查找
-    private void clickVisible(WebDriverWait wait, String text) {
+    protected void clickVisible(WebDriverWait wait, String text) {
         WebElement element = findVisibleElement(wait, text);
         element.click();
         System.out.println(text+"完成");
         sleep(1000);/** 点击结束睡一秒等待一下*/
     }
     //普通按键点击 重载，可以通过定位器查找
-    private void clickVisible(WebDriverWait wait, By locator) {
+    protected void clickVisible(WebDriverWait wait, By locator) {
         WebElement element = findVisibleElement(wait, locator);
         element.click();
         sleep(1000);/** 点击结束睡一秒等待一下*/
     }
 
     // 普通右键点击
-    private void rightClickVisible(WebDriverWait wait, String text) {
+    protected void rightClickVisible(WebDriverWait wait, String text) {
         WebElement element = findVisibleElement(wait, text);
         new Actions(driver).contextClick(element).perform();
         System.out.println(text + "右键完成");
@@ -310,7 +354,7 @@ public class atomManipulation implements atomManipulationInterface {
     }
 
     /** 点击后等待目标出现；已出现就不再点击，未出现才重试。 */
-    private void clickUntilVisible(WebDriverWait wait, String text, By resultLocator) {
+    protected void clickUntilVisible(WebDriverWait wait, String text, By resultLocator) {
         driver.manage().timeouts().implicitlyWait(Duration.ZERO);
         try {
             WebDriverWait resultWait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -488,6 +532,26 @@ public class atomManipulation implements atomManipulationInterface {
         // 点击后弹窗可能立即刷新，不能再读取原 WebElement 的属性。
         System.out.println(clickedText + "完成");
         sleep(500);/** 点击结束睡一秒等待一下*/
+    }
+
+    /** 弹窗刷新可能替换按钮；每次重试重新定位，并把点击也放入等待中。 */
+    private void clickDialogVisible(WebDriverWait wait, By dialogLocator, By buttonLocator) {
+        wait.withMessage("弹窗按钮未能点击：" + buttonLocator).until(d -> {
+            try {
+                for (WebElement dialog : d.findElements(dialogLocator)) {
+                    if (!dialog.isDisplayed()) continue;
+                    for (WebElement button : dialog.findElements(buttonLocator)) {
+                        if (!button.isDisplayed() || !button.isEnabled()
+                                || "true".equals(button.getAttribute("aria-disabled"))) continue;
+                        button.click();
+                        return true;
+                    }
+                }
+            } catch (StaleElementReferenceException | ElementClickInterceptedException e) {
+                // 全选后重绘或遮罩尚未消失，下一轮重新定位并点击。
+            }
+            return false;
+        });
     }
 
     /** 在弹窗中选择列表项；优先点击该行的复选框，找不到复选框时再点击文本本身。 */

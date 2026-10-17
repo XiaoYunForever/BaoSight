@@ -1,14 +1,13 @@
 package com.baoSight.DTO.model.evaluation;
 
-import com.baoSight.enums.Verdict;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
+/** 单个用例的评分结果，通过 protocolType 区分协议。 */
 @Data
 public class CaseEvaluationResult {
+    private String protocolType;
     private String caseCode;
     private int score;
     private int maxScore;
-
+    private String errorText;
 }

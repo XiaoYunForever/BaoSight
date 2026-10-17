@@ -13,6 +13,8 @@
         <maven.compiler.target>11</maven.compiler.target>
         <milo.version>0.6.16</milo.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <tomcat.version>9.0.123</tomcat.version>
+        <cargo.servlet.port>8080</cargo.servlet.port>
     </properties>
     <dependencies>
         <dependency>
@@ -75,7 +77,50 @@
     </dependencies>
 
     <build>
+        <finalName>BaoSight</finalName>
         <plugins>
+            <!-- Maven 启动 Tomcat 9：mvn -DskipTests package cargo:run -->
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven3-plugin</artifactId>
+                <version>1.10.27</version>
+                <configuration>
+                    <container>
+                        <containerId>tomcat9x</containerId>
+                        <type>installed</type>
+                        <zipUrlInstaller>
+                            <url>https://repo.maven.apache.org/maven2/org/apache/tomcat/tomcat/${tomcat.version}/tomcat-${tomcat.version}.zip</url>
+                            <downloadDir>${project.build.directory}/cargo/downloads</downloadDir>
+                            <extractDir>${project.build.directory}/cargo/container</extractDir>
+                        </zipUrlInstaller>
+                    </container>
+                    <configuration>
+                        <type>standalone</type>
+                        <home>${project.build.directory}/cargo/config</home>
+                        <properties>
+                            <cargo.servlet.port>${cargo.servlet.port}</cargo.servlet.port>
+                        </properties>
+                    </configuration>
+                    <deployables>
+                        <deployable>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>BaoSight</context>
+                            </properties>
+                        </deployable>
+                    </deployables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <warSourceDirectory>web</warSourceDirectory>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

@@ -66,6 +66,7 @@ public class opcua_atom extends atomManipulation {
 
     public void port(String port) throws InterruptedException {
         //port:48400-48499
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         Thread.sleep(1000);
         By INPUT = By.cssSelector("input.baosky-common-number-input.property-input");
         WebElement opcport = driver.findElement(INPUT);
@@ -75,8 +76,9 @@ public class opcua_atom extends atomManipulation {
         System.out.println("端口修改完成");
         Thread.sleep(2000);
         //重置状态
-        WebElement renew = driver.findElement(By.cssSelector(".property-tree-container [data-test-id='virtuoso-scroller']"));
-        renew.click();
+        clickVisible(wait,"OPC UA服务器");
+//        WebElement renew = driver.findElement(By.cssSelector(".property-tree-container [data-test-id='virtuoso-scroller']"));
+//        renew.click();
 
         Thread.sleep(2000);
     }

@@ -6,6 +6,7 @@ import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
 import com.baoSight.DTO.model.common.DeviceInfo;
 import com.baoSight.DTO.model.analysis.CaseAnalysisResult;
 import com.baoSight.DTO.model.evaluation.CaseEvaluationResult;
+import com.baoSight.DTO.model.evaluation.TestEvaluationResult;
 import com.baoSight.DTO.model.execution.CaseExecutionRequest;
 import com.baoSight.DTO.model.execution.CaseExecutionResult;
 import com.baoSight.enums.ExecutionMode;
@@ -21,24 +22,14 @@ import java.util.List;
 
 @Service
 public class mainRun {
-    ArrayList<String> codelist;
-    String code;
-    Character protocolNum;
-    String caseNum;
-
-    ArrayList<CaseEvaluationResult>  caseEvaluationResultList;
-    float finalScore;
-
-    String protocolName;
-    String caseName;
 
     @Autowired
     private ApplicationContext applicationContext;
 
 
-    public void run(CreateTestRequest createTestRequest) throws Exception {
-        codelist = createTestRequest.getCodelist();
-        caseEvaluationResultList = new ArrayList<>();
+    public TestEvaluationResult run(CreateTestRequest createTestRequest) throws Exception {
+        ArrayList<String> codelist = createTestRequest.getCodelist();
+        ArrayList<CaseEvaluationResult> caseEvaluationResultList = new ArrayList<>();
         // 解析数据类
         CaseExecutionRequest caseExecutionRequest = new CaseExecutionRequest();
         caseExecutionRequest.setDevice(createTestRequest.getDevice());
@@ -46,28 +37,24 @@ public class mainRun {
 
         //解析
         for(int i=0;i<codelist.size();i++){
-            code = codelist.get(i);
-            protocolNum = code.charAt(0);
-            caseNum = code.substring(1);
+            String code = codelist.get(i);
+            char protocolNum = code.charAt(0);
+            String caseNum = code.substring(1);
+            String protocolName;
 
             if(protocolNum == '6'){
                 //OPCUA
                 protocolName = "opcua";
+            } else {
+                throw new IllegalArgumentException("尚未配置用例协议编号：" + code);
             }
-            caseName = protocolName+"_"+caseNum;
+            String caseName = protocolName+"_"+caseNum;
+            caseExecutionRequest.setCaseCode(code);
 
             //自动化模块反射执行
             Protocol protocol = applicationContext.getBean("case"+"_"+caseName,Protocol.class);
             CaseExecutionResult result = protocol.start(caseExecutionRequest);
-
-
-            System.out.println("value " + result.getOpcUaCaseData().getServerTimeText());
-            System.out.println("connected " + result.getOpcUaCaseData().isConnected());
-
-
-
             //简易评分
-
             Evaluation evaluation = applicationContext.getBean("evalu"+"_"+caseName,Evaluation.class);
             CaseEvaluationResult evalu_result = evaluation.evaluate(result);
             caseEvaluationResultList.add(evalu_result);
@@ -77,11 +64,10 @@ public class mainRun {
 
         //总评分模块
         evaluationAll evaluationAll = new evaluationAll();
-        finalScore = evaluationAll.evaluate(caseEvaluationResultList);
-        System.out.println("finalScore " + finalScore);
+        TestEvaluationResult report = evaluationAll.summarize(caseEvaluationResultList);
+        System.out.println("finalScore " + report.getFinalScore());
+        System.out.println(report);
+        return report;
 
-        //报告生成
-        //RESULT
-        //return RESULT
     }
 }

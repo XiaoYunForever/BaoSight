@@ -31,15 +31,17 @@ public class opcua_01 extends AbstractBrowserCase {
         // 原子操作
         actions.initialization();
         actions.opcuaInitial();
-        //actions.port("48488");//48400-48499
+        actions.port("48488");//48400-48499
         actions.subscription();
         actions.securityStrategy();
         actions.certification();
         actions.userAdministration("admin1","admin123");
         actions.loadingPrograms(caseName);
-        //actions.simAndDownload();
+        actions.simAndDownload();
+        actions.close();
         //ua 访问虚拟opcUA服务器
         OpcUaCaseData opcUaCaseData = new OpcUaCaseData();
+        opcUaCaseData.setCaseCode(caseExecutionRequest.getCaseCode());
 
         // 只启动虚拟服务器，不看变量表
         UaClient.ConnectConfig connectConfig = UaClient.ConnectConfig.builder()
@@ -60,7 +62,7 @@ public class opcua_01 extends AbstractBrowserCase {
         } catch (Exception e) { // 连接失败
             opcUaCaseData.setConnected(false);
             opcUaCaseData.setServerTimeText(null);
-            System.err.println("OPC UA 连接失败，跳过读取并继续后续流程：" + e.getMessage());
+            opcUaCaseData.setErrorText("OPC UA 连接失败");
         }
 
         if (client != null) {
@@ -71,17 +73,31 @@ public class opcua_01 extends AbstractBrowserCase {
                     Identifiers.Server_ServerStatus_CurrentTime
             ).get(15, TimeUnit.SECONDS);
 
-            System.out.println("读取状态：" + value.getStatusCode());
-            System.out.println("服务器时间：" + value.getValue().getValue());
-            opcUaCaseData.setServerTimeText(String.valueOf(value.getValue().getValue()));
+            //System.out.println("读取状态：" + value.getStatusCode());
+            //System.out.println("服务器时间：" + value.getValue().getValue());
+            if (value.getStatusCode() == null || !value.getStatusCode().isGood()
+                    || value.getValue() == null || value.getValue().getValue() == null) {
+                opcUaCaseData.setErrorText("读取服务器时间失败，状态：" + value.getStatusCode());
+            } else {
+                opcUaCaseData.setServerTimeText(String.valueOf(value.getValue().getValue()));
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        } catch (Exception e) {
+            opcUaCaseData.setErrorText("读取服务器时间失败：");
         } finally {
-            client.disconnect().get(5, TimeUnit.SECONDS);
+            try {
+                client.disconnect().get(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            } catch (Exception e) {
+                // 清理连接失败不覆盖已经获得的评分依据。
+                System.err.println("OPC UA 断开连接失败:" + e.getMessage());
+            }
         }
         }
-
-
-
-
         CaseExecutionResult r = new CaseExecutionResult();
         r.setOpcUaCaseData(opcUaCaseData);
         return r;
